@@ -1,7 +1,7 @@
 use id3::{ Error, ErrorKind, Tag, TagLike, Version };
-use std::fs;
+use std::{ fs, path::PathBuf };
 
-pub fn view(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn view(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
     let tag = match Tag::read_from_path(path) {
         Ok(tag) => tag,
         Err(Error{kind: ErrorKind::NoTag, ..}) => Tag::new(),
@@ -14,7 +14,7 @@ pub fn view(path: &str) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-pub fn edit_title(path: &str, new_title: &str) -> Result<(), Box<dyn std::error::Error>> {
+pub fn edit_title(path: &PathBuf, new_title: &str) -> Result<(), Box<dyn std::error::Error>> {
     let temp_file = std::env::temp_dir().join("temp.mp3");
     fs::copy(path, &temp_file)?;
 

@@ -1,6 +1,6 @@
 mod metadata;
 
-use std::{ env, process };
+use std::{ env, process, fs, path::PathBuf };
 use getopts::Options;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -27,8 +27,21 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         process::exit(0);
     }
 
-    metadata::view("assets/test.mp3")?;
-    metadata::edit_title("assets/test.mp3", "Happy! Lucky! Hardtek!")?;
+    let file_path = match matches.opt_str("f") {
+        Some(f) => get_path(f.as_str()),
+        None => {
+            if let Some(path) = matches.free.first() {
+                get_path(path)
+            } else {
+                eprintln!("{prog}: ERROR!! Song's filepath is a must!!!\n");
+                print_usage(prog, &opts);
+                process::exit(1);
+            }
+        }
+    };
+
+    metadata::view(&file_path)?;
+    metadata::edit_title(&file_path, "Happy! Lucky! Hardtek!")?;
 
     Ok(())
 }
@@ -36,4 +49,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 fn print_usage(prog: &str, opts: &Options) {
     let brief = format!("Usage: {prog} [options]");
     print!("{}", opts.usage(&brief));
+}
+
+fn get_path(path: &str) -> PathBuf {
+    let full_path = match fs::canonicalize(&path) {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("Uweehhh~~ I fwailed to get the full path TT. {e}");
+            process::exit(1);
+        }
+    };
+
+    PathBuf::from(full_path)
 }
