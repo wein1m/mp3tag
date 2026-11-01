@@ -3,6 +3,8 @@ mod metadata;
 use std::{ env, process, fs, path::PathBuf };
 use getopts::Options;
 
+use crate::metadata::MetadataField;
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args: Vec<String> = env::args().collect();
     let prog = &args[0];
@@ -56,10 +58,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if let Some(title) = new_title {
-        metadata::edit_title(&file_path, title.as_str())?;
+        metadata::edit_tag(&file_path, MetadataField::Title, title.as_str())?;
     }
     if let Some(artist) = new_artist {
-        metadata::edit_artist(&file_path, artist.as_str())?;
+        metadata::edit_tag(&file_path, MetadataField::Artist, artist.as_str())?;
     }
 
     // metadata::view(&file_path)?;
