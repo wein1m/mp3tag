@@ -1,6 +1,6 @@
 mod metadata;
 
-use std::{ env, process, fs, path::PathBuf };
+use std::{ env, process, fs, path::PathBuf, io, io::Write };
 use getopts::Options;
 
 use crate::metadata::MetadataField;
@@ -57,14 +57,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         });
     }
 
-    if let Some(title) = new_title {
+    if let Some(title) = &new_title {
         metadata::edit_tag(&file_path, MetadataField::Title, title.as_str())?;
+        println!("Title has Successfully edited!~");
     }
-    if let Some(artist) = new_artist {
+    if let Some(artist) = &new_artist {
         metadata::edit_tag(&file_path, MetadataField::Artist, artist.as_str())?;
+        println!("Artist has Successfully edited!~");
     }
 
-    // metadata::view(&file_path)?;
+    if new_title.is_none() && new_artist.is_none() {
+        interactive_mode(&file_path, prog)?;
+    }
+
     Ok(())
 }
 
@@ -89,6 +94,64 @@ fn validate_data(value: &str, field: &str) -> Result<(), String> {
     if value.trim().is_empty() {
         return Err(format!("{field} cannot be empty!"));
     }
+
+    Ok(())
+}
+
+fn interactive_mode(file_path: &PathBuf, prog: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let title = metadata::view(&file_path, MetadataField::Title).unwrap();
+    let artist = metadata::view(&file_path, MetadataField::Artist).unwrap();
+
+    println!("Original Title: {}", title);
+    println!("Original Artist: {}", artist);
+
+    println!("");
+
+    print!("New Title: ");
+    io::stdout().flush()?;
+    
+    let mut new_title = String::new();
+    io::stdin().read_line(&mut new_title)?;
+
+    if new_title.trim().is_empty() {
+        new_title = title;
+    }
+
+    print!("New Artist: ");
+    io::stdout().flush()?;
+
+    let mut new_artist = String::new();
+    io::stdin().read_line(&mut new_artist)?;
+
+    if new_artist.trim().is_empty() {
+        new_artist = artist;
+    }
+
+    println!("");
+
+    print!("Save Changes: [Y/n] ");
+    io::stdout().flush()?;
+
+    let mut confirm = String::new();
+    io::stdin().read_line(&mut confirm)?;
+
+    let save_changes = match confirm.trim().to_lowercase().as_str() {
+        "" | "y" | "yes" => true,
+        "n" | "no" => false,
+        _ => {
+            eprintln!("{prog}: Only Accepting Y/N !!!");
+            process::exit(1)
+        }
+    };
+
+    if save_changes {
+        metadata::edit_tag(&file_path, MetadataField::Title, new_title.trim())?;
+        metadata::edit_tag(&file_path, MetadataField::Artist, new_artist.trim())?;
+        println!("Successfully edited!~");
+    } else {
+        println!("Changes discarded..")
+    };
+
 
     Ok(())
 }

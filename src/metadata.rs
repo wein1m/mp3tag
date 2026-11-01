@@ -47,7 +47,5 @@ pub fn edit_tag(path: &PathBuf, field: MetadataField, input: &str) -> Result<(),
 
     fs::copy(&temp_file, path)?;
     fs::remove_file(temp_file)?;
-
-    println!("Successfully edited!~");
     Ok(())
 }
