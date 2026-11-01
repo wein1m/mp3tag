@@ -56,15 +56,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     if let Some(title) = new_title {
-        println!("title: {title}");
+        metadata::edit_title(&file_path, title.as_str())?;
     }
     if let Some(artist) = new_artist {
         println!("artist: {artist}");
     }
 
     // metadata::view(&file_path)?;
-    metadata::edit_title(&file_path, "Happy! Lucky! Hardtek!")?;
-
     Ok(())
 }
 
