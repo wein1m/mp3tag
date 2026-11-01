@@ -6,17 +6,19 @@ pub enum MetadataField {
     Artist
 }
 
-pub fn view(path: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+pub fn view(path: &PathBuf, field: MetadataField) -> Result<String, Box<dyn std::error::Error>> {
     let tag = match Tag::read_from_path(path) {
         Ok(tag) => tag,
         Err(Error{kind: ErrorKind::NoTag, ..}) => Tag::new(),
         Err(err) => return Err(Box::new(err))
     };
 
-    println!("title: {}", tag.title().unwrap());
-    println!("artist: {}", tag.artist().unwrap());
+    let value = match field { 
+        MetadataField::Title => tag.title(),
+        MetadataField::Artist => tag.artist()
+    };  
 
-    Ok(())
+    Ok(value.unwrap_or("Unknown").to_string())
 }
 
 fn move_temp(path: &PathBuf) -> Result<PathBuf, std::io::Error> {
