@@ -34,13 +34,35 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 get_path(path)
             } else {
                 eprintln!("{prog}: ERROR!! Song's filepath is a must!!!\n");
-                print_usage(prog, &opts);
                 process::exit(1);
             }
         }
     };
+    let new_title = matches.opt_str("t");
+    let new_artist = matches.opt_str("a");
 
-    metadata::view(&file_path)?;
+    if let Some(title) = &new_title {
+        validate_data(title, "Title").unwrap_or_else(|e| {
+            eprintln!("{prog}: ERRORRR {e}");
+            process::exit(1);
+        });
+    }
+
+    if let Some(artist) = &new_artist {
+        validate_data(artist, "Artist").unwrap_or_else(|e| {
+            eprintln!("{prog}: ERRORRR {e}");
+            process::exit(1);
+        });
+    }
+
+    if let Some(title) = new_title {
+        println!("title: {title}");
+    }
+    if let Some(artist) = new_artist {
+        println!("artist: {artist}");
+    }
+
+    // metadata::view(&file_path)?;
     metadata::edit_title(&file_path, "Happy! Lucky! Hardtek!")?;
 
     Ok(())
@@ -61,4 +83,12 @@ fn get_path(path: &str) -> PathBuf {
     };
 
     PathBuf::from(full_path)
+}
+
+fn validate_data(value: &str, field: &str) -> Result<(), String> {
+    if value.trim().is_empty() {
+        return Err(format!("{field} cannot be empty!"));
+    }
+
+    Ok(())
 }
